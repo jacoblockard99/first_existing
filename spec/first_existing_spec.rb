@@ -1,5 +1,3 @@
-include FirstExisting
-
 RSpec.describe FirstExisting do
   it "has a version number" do
     expect(FirstExisting::VERSION).not_to be nil
