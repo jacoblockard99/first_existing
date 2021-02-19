@@ -1,5 +1,6 @@
 require "first_existing/version"
 require "first_existing/kernel"
+require "first_existing/hash"
 
 module FirstExisting
   def first_existing *args
