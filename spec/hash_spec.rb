@@ -85,17 +85,41 @@ RSpec.describe Hash do
   end
 
   describe '#required' do
-    context 'when the option exists' do
-      it 'does nothing' do
-        h = { key: :value }
-        expect { h.required! :key }.to_not raise_error
+    context 'when given one option' do
+      context 'when the option exists' do
+        it 'does nothing' do
+          h = { key: :value }
+          expect { h.required! :key }.to_not raise_error
+        end
+      end
+
+      context 'when the option does not exist' do
+        it 'raises an appropriate error' do
+          h = {}
+          expect { h.required! :name}.to raise_error "The 'name' option is required!"
+        end
       end
     end
 
-    context 'when the option does not exist' do
-      it 'raises an appropriate error' do
-        h = {}
-        expect { h.required! :name}.to raise_error "The 'name' option is required!"
+    context 'when given multiple options' do
+      context 'when all the options exist' do
+        it 'does nothing' do
+          h = { one: :value1, two: :value2, three: :value3, four: :value4 }
+          expect { h.required! :one, :two, :three, :four }.to_not raise_error
+        end
+      end
+
+      context 'when an option does not exist' do
+        it 'raises an appropriate error' do
+          h = { two: :value2, three: :value3 }
+          expect { h.required! :one, :two, :three }.to raise_error "The 'one' option is required!"
+
+          h = { one: :value1, three: :value3 }
+          expect { h.required! :one, :two, :three }.to raise_error "The 'two' option is required!"
+
+          h = { one: :value1, two: :value2 }
+          expect { h.required! :one, :two, :three }.to raise_error "The 'three' option is required!"
+        end
       end
     end
   end
