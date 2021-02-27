@@ -83,4 +83,20 @@ RSpec.describe Hash do
       end
     end
   end
+
+  describe '#required' do
+    context 'when the option exists' do
+      it 'does nothing' do
+        h = { key: :value }
+        expect { h.required! :key }.to_not raise_error
+      end
+    end
+
+    context 'when the option does not exist' do
+      it 'raises an appropriate error' do
+        h = {}
+        expect { h.required! :name}.to raise_error "The 'name' option is required!"
+      end
+    end
+  end
 end
