@@ -1,8 +1,6 @@
 # FirstExisting
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/first_existing`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+FirstExisting is an extremely simple Ruby gem that contains methods for selecting objects based on their existence.
 
 ## Installation
 
@@ -22,19 +20,62 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+FirstExisting is currently composed of only 3 methods: `first_existing`, `Hash#required!`, and `Hash#default!`
 
-## Development
+### `first_existing`
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+`first_existing` accepts list of objects, returning that first that is not `nil`. It is automatically added globally to `Kernel`. Example:
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```ruby
+first_existing(nil, nil, "test", nil) # => "test"
+```
 
-## Contributing
+A common use case for it is with Ruby on Rails content helpers, like so:
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/first_existing.
+```erb
+<head>
+  <title><%= first_existing(content_for(:title), "default") %></title>
+</head>
+```
 
+ ### `Hash#required!`
+ 
+ FirstExisting also automatically adds a `required!` method to `Hash` that automatically raises exceptions when the given key does not exist. For example:
+ 
+ ```ruby
+ def some_method(options = {})
+   options.required! :name
+   "Hello, #{name}"
+ end
+ 
+ some_method(name: "Jacob") # => "Hello, Jacob"
+ some_method(last_name: "Lockard") # => RuntimeError (The 'name' option is required!)
+ ```
 
-## License
+### `Hash#default!`
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Finally, a `default!` method is added to `Hash` that automatically sets defaults for a key if its value is nil. It accepts as parameters the name of the key to change and a list of default values. The first existing value is used. For example:
+
+```ruby
+$GLOBAL_LAST_NAME = "Global"
+class Example
+    def initialize(last_name:)
+      @last_name = last_name
+    end
+
+    def some_method(options = {})
+      options.default! :name, "Jacob"
+      options.default! :last_name, $GLOBAL_LAST_NAME, @last_name, "Lockard"
+      "Hello, #{options[:name]} #{options[:last_name]}"
+    end
+end
+
+Example.new(last_name: "Class").some_method(last_name: "Last") # => "Hello, Jacob Last"
+
+Example.new(last_name: "Class").some_method(name: "First") # => "Hello, First Global"
+
+$GLOBAL_LAST_NAME = nil
+Example.new(last_name: "Class").some_method # => "Hello, Jacob Class"
+
+Example.new(last_name: nil).some_method # => "Hello, Jacob Lockard"
+```
